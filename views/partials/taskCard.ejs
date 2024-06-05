@@ -1,0 +1,81 @@
+    <% if (task.length > 0 ) { %>
+      <% task.forEach(result => { %>
+        <div class="card mx-2 my-2" style="width: 18rem">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="card-title"><%= result.title %></h3>
+              <div class="">
+                <% if (result.status) {%> 
+                <span class="badge rounded-pill text-bg-success">Done</span>
+              <% } else { %>
+                <span class="badge rounded-pill text-bg-danger">Pending</span>
+                <% } %>
+              </div>
+            </div>
+            <h6 class="card-subtitle mb-2 text-body-secondary"><%= result.updatedAt.toDateString() %></h6>
+            <h6><em>belong to <strong><%= user.find(user => user.id === result.user_id).name %></strong></em></h6>
+            <p class="card-text">
+              <%= result.description %>
+            </p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateTask<%= result.id %>">
+                Edit
+            </button>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal">
+                <a href="/task/delete/<%= result.id %>" class="text-white text-decoration-none">Delete</a>
+            </button>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+
+
+<!-- Button trigger modal -->
+
+  
+  <!-- Modal -->
+  <% task.forEach(result => { %>
+  <div class="modal fade" id="updateTask<%= result.id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Task</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form class="w-100" action="/task/update/<%= result.id %>" method="POST">
+            <div class="row mb-3">
+              <label for="title" class="col-sm-3 col-form-label">Title</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control" id="title" name="title" value="<%= result.title %>">
+              </div>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" rows="3" name="description"><%= result.description %></textarea>
+              </div>
+            <fieldset class="row mb-3">
+              <legend class="col-form-label col-sm-3 pt-0">Status</legend>
+              <div class="col-sm-9">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="status" id="status" value="false" checked>
+                  <label class="form-check-label" for="status">
+                    Pending
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="status" id="status" value="true">
+                  <label class="form-check-label" for="status">
+                    Done
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+      </div>
+    </div>
+  </div>
+  <% }) %>

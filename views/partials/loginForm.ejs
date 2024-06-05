@@ -1,0 +1,36 @@
+<form action="/auth/login" method="post" class="p-5 w-50 bg-light rounded">
+  <div class="mb-3 row">
+    <label for="email" class="col-sm-2 col-form-label">Email</label>
+    <div class="col-sm-10">
+      <input
+        type="text"
+        class="form-control"
+        id="email"
+        name="email"
+        placeholder="email@example.com"
+        required
+      />
+    </div>
+  </div>
+  <div class="mb-3 row">
+    <label for="password" class="col-sm-2 col-form-label">Password</label>
+    <div class="col-sm-10">
+      <input
+        type="password"
+        class="form-control"
+        id="password"
+        name="password"
+        placeholder="password"
+        required
+      />
+    </div>
+  </div>
+  <button type="submit" class="btn btn-dark w-100">Submit</button>
+  <div>
+    <a
+      href="/auth/register"
+      class="text-decoration-none mt-3 d-block text-center text-black"
+      >Dont' have an account?</a
+    >
+  </div>
+</form>
