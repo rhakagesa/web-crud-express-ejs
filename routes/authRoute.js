@@ -3,7 +3,7 @@
 const express = require("express");
 const router = express.Router();
 const AuthController = require("../controllers/authController");
-const authentication = require("../middlewares/authentication");
+const isLoggedIn = require("../middlewares/isLoggedIn");
 
 router.get("/login", (req, res) => {
   res.render("login");
@@ -14,7 +14,6 @@ router.get("/register", (req, res) => {
 });
 router.post("/register", AuthController.registerUser);
 
-router.use(authentication);
-router.get("/logout", AuthController.logout);
+router.get("/logout", isLoggedIn, AuthController.logout);
 
 module.exports = router;
