@@ -59,11 +59,13 @@ module.exports = class UserController {
       
       if(Number(req.params.id) === req.session.userId) {
         await UserRepository.destroy({ where: { id: req.params.id } }).then((user) => {
+          TaskRepository.destroy({ where: { user_id: req.params.id } })
           req.session.destroy()
           res.status(200).redirect("/")
         })
       } else {
         await UserRepository.destroy({ where: { id: req.params.id } }).then((user) => {
+          TaskRepository.destroy({ where: { user_id: req.params.id } })
           res.status(200).redirect("/user")
         })
       }

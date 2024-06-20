@@ -1,9 +1,11 @@
 "use strict";
 
 const express = require("express");
+const isLoggedIn = require("../middlewares/isLoggedIn");
 const router = express.Router();
 const TaskController = require("../controllers/taskController");
 
+router.use(isLoggedIn);
 router.get("/create", (req, res) => {
     res.render("createTask");
 });

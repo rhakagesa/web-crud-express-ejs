@@ -1,7 +1,7 @@
 "use strict";
 
-const TaskService = require("../services/taskService");
-const UserService = require("../services/userService");
+const TaskRepository = require("../models").Task;
+const UserRepository = require("../models").User;
 
 module.exports = class TaskController {
   static async createTask(req, res, next) {
@@ -9,12 +9,16 @@ module.exports = class TaskController {
       title: req.body.title,
       description: req.body.description,
       status: req.body.status || false,
-      user_id: req.session.id,
+      user_id: req.session.userId,
     };
     try {
-      await TaskService.createTask(data).then((result) => {
-        res.status(201).redirect("/task/mytask");
-      });
+      if (!data.title || !data.description) {
+        throw new Error("title and description are required");
+      } else {
+        await TaskRepository.create(data).then((result) => {
+          res.status(201).redirect("/task/mytask");
+        });
+      }
     } catch (error) {
       next({ message: error.message, status: 404, backlink: "/task/create" });
     }
@@ -22,12 +26,18 @@ module.exports = class TaskController {
 
   static async getAllTasks(req, res, next) {
     try {
-      const user = await UserService.findAllUsers();
-      await TaskService.getAllTask().then((result) => {
-        res.status(200).render("tasks", {
-          task: result,
-          user,
-        });
+    
+      const user = await UserRepository.findAll();
+      
+      await TaskRepository.findAll().then((result) => {
+        if (result.length <= 0) {
+          throw new Error("no tasks found");
+        } else {
+          res.status(200).render("tasks", {
+            task: result,
+            user,
+          });
+        }
       });
     } catch (error) {
       next({ message: error.message, status: 404, backlink: "/user/info"})
@@ -36,16 +46,20 @@ module.exports = class TaskController {
 
   static async getMyTask(req, res, next) {
     try {
-      const user = await UserService.findAllUsers();
-      await TaskService.getMyTask(req.session.id).then((result) => {
-        res.status(200).render("task", {
-          task: result,
-          user,
-        });
+      const user = await UserRepository.findAll();
+      await TaskRepository.findAll({ where: { user_id: req.session.userId || 0} }).then((result) => {
+        if (result.length <= 0) {
+          throw new Error("no tasks found");
+        } else {
+          res.status(200).render("task", {
+            task: result,
+            user,
+          }); 
+        }
       });
     } catch (error) {
       next({ message: error.message, status: 404, backlink: "/user/info"})
-  }
+    }
   }
 
   static async updateTask(req, res, next) {
@@ -54,13 +68,17 @@ module.exports = class TaskController {
       title: req.body.title,
       description: req.body.description,
       status: req.body.status || false,
-      user_id: req.session.id,
+      user_id: req.session.userId,
     };
 
     try {
-      await TaskService.updateTask(data).then((result) => {
-        res.status(200).redirect("/task/mytask");
-      });
+      if (!data.title || !data.description) {
+          throw new Error("title and description are required");
+      } else {
+          await TaskRepository.update(data, { where: { id: data.id } }).then((result) => {
+            res.status(200).redirect("/task/mytask");
+          });
+      }
     } catch (error) {
       next({ message: error.message, status: 404, backlink: "/task" });
     }
@@ -69,7 +87,7 @@ module.exports = class TaskController {
   static async deleteTask(req, res, next) {
     const id = req.params.id;
     try {
-      await TaskService.deleteTask(id).then((result) => {
+      await TaskRepository.destroy({ where: { id } }).then((result) => {
         res.status(200).redirect("/task/mytask");
       });
     } catch (error) {
