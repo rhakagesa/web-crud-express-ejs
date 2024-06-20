@@ -1,12 +1,15 @@
 "use strict";
 
-const UserService = require("../services/userService");
+const UserRepository = require("../models/").User;
+const TaskRepository = require("../models").Task;
+
+const { hashPassword } = require("../helpers/bcrypt");
 
 module.exports = class UserController {
   static async getAllUsers(req, res, next) {
     try {
-      await UserService.findAllUsers().then((result) => {
-        res.status(200).render("users",{users: result, loggedInId: req.session.id});
+      await UserRepository.findAll().then((result) => {
+        res.status(200).render("users",{users: result, loggedInId: req.session.userId});
       });
     } catch (error) {
       next({ message: error.message, status: 404, backlink: "/users"})
@@ -14,11 +17,11 @@ module.exports = class UserController {
   }
 
   static async getUser(req, res, next) {
-    await UserService.findUser(req.session.id)
+    await UserRepository.findByPk(req.session.userId)
       .then((result) => {
         res.status(200).render("user", {
           user: {
-            id: req.session.id,
+            id: req.session.userId,
             name: result.name,
             email: result.email,
             password: result.password,
@@ -32,33 +35,43 @@ module.exports = class UserController {
 
   static async updateUser(req, res, next) {
     const data = {
-      id: req.session.id,
+      id: req.params.id,
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
     };
 
     try {
-      await UserService.update(data).then((result) => {
-        res.status(200).render("user", { user: {
-          id: result.id,
-          name: result.name,
-          email: result.email,
-          password: result.password,
-        }, message: "user updated successfully" });
-      });
+        await UserRepository.findByPk(data.id).then((user) => {
+          data.password = hashPassword(data.password);
+          user.update(data)
+             
+          res.status(200).redirect("/user");
+        });        
     } catch (error) {
       next({ message: error.message, status: 404, backlink: "/user" })  
     }
   }
 
   static async deleteUser(req, res, next) {
-    await UserService.delete(req.session.id)
-      .then((result) => {
-        res.status(200).render("index", { message: "user deleted successfully" });
-      })
-      .catch((error) => {
+
+    try{
+      
+      if(Number(req.params.id) === req.session.userId) {
+        await UserRepository.destroy({ where: { id: req.params.id } }).then((user) => {
+          TaskRepository.destroy({ where: { user_id: req.params.id } })
+          req.session.destroy()
+          res.status(200).redirect("/")
+        })
+      } else {
+        await UserRepository.destroy({ where: { id: req.params.id } }).then((user) => {
+          TaskRepository.destroy({ where: { user_id: req.params.id } })
+          res.status(200).redirect("/user")
+        })
+      }
+       
+      } catch (error) {
         next({ message: error.message, status: 404, backlink: "/user"})
-      });
+      };
   }
 };

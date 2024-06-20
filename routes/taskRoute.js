@@ -1,19 +1,18 @@
 "use strict";
 
 const express = require("express");
+const isLoggedIn = require("../middlewares/isLoggedIn");
 const router = express.Router();
 const TaskController = require("../controllers/taskController");
-const {taskAuthorization} = require("../middlewares/authorization");
-const authentication = require("../middlewares/authentication");
 
-router.use(authentication);
+router.use(isLoggedIn);
 router.get("/create", (req, res) => {
     res.render("createTask");
 });
 router.post("/create", TaskController.createTask);
 router.get("/", TaskController.getAllTasks);
 router.get("/mytask", TaskController.getMyTask);
-router.post("/update/:id", taskAuthorization, TaskController.updateTask);
-router.get("/delete/:id", taskAuthorization, TaskController.deleteTask);
+router.post("/update/:id",  TaskController.updateTask);
+router.get("/delete/:id", TaskController.deleteTask);
 
 module.exports = router;

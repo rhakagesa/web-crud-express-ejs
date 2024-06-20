@@ -3,13 +3,12 @@
 const express = require("express");
 const router = express.Router();
 const UserController = require("../controllers/userController");
-const authentication = require("../middlewares/authentication");
-const { userAuthorization } = require("../middlewares/authorization");
+const isLoggedIn = require("../middlewares/isLoggedIn");
 
-router.use(authentication);
+router.use(isLoggedIn);
 router.get("/", UserController.getAllUsers);
 router.get("/info", UserController.getUser);
-router.post("/update/:id", userAuthorization, UserController.updateUser);
-router.get("/delete/:id", userAuthorization, UserController.deleteUser);
+router.post("/update/:id",  UserController.updateUser);
+router.get("/delete/:id", UserController.deleteUser);
 
 module.exports = router;

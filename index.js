@@ -1,7 +1,7 @@
 "use strict";
 
 const express = require("express");
-const cookieParser = require("cookie-parser");
+const session = require("express-session");
 const app = express();
 const port = 3001;
 
@@ -12,7 +12,13 @@ const errorHandler = require("./middlewares/errorHandler");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cookieParser());
+app.use(
+  session({
+    secret: "rahasia",
+    resave: false,
+    saveUninitialized: true,
+  })
+)
 
 app.set("view engine", "ejs");
 app.use("/auth", authRoute);
